@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>汉服·全能图片工坊</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #1e1612;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', 'Microsoft YaHei', serif;
+      padding: 16px;
+      margin: 0;
+    }
+    .paper {
+      background: #f7ede1;
+      border-radius: 40px;
+      box-shadow: 0 24px 36px rgba(0,0,0,0.6), 0 0 0 1px #ddc3ae inset, 0 8px 0 #7a5d4c inset;
+      padding: 24px 24px 32px;
+      max-width: 1400px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    h2 {
+      text-align: center;
+      font-weight: 350;
+      letter-spacing: 8px;
+      color: #4e382b;
+      text-shadow: 2px 2px 0 #e7d1be;
+      font-size: 2.2rem;
+      margin: 0 0 12px 0;
+    }
+    h2 small {
+      font-size: 0.9rem;
+      letter-spacing: 3px;
+      margin-left: 10px;
+      color: #8b624b;
+    }
+    .main-layout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+    }
+    /* 左侧画布区 */
+    .canvas-area {
+      flex: 2;
+      min-width: 320px;
+    }
+    .upload-area {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .upload-label {
+      background: #dbbc9e;
+      padding: 10px 28px;
+      border-radius: 48px;
+      box-shadow: inset 0 1px 5px #fff3e8, 0 5px 0 #6a4e3e, 0 3px 8px black;
+      color: #2d1f17;
+      font-weight: 600;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: 0.08s;
+      border-bottom: 2px solid #a5836e;
+    }
+    .upload-label:active {
+      transform: translateY(3px);
+      box-shadow: inset 0 1px 5px #fff3e8, 0 2px 0 #5a3f31, 0 3px 8px black;
+    }
+    #fileInput { display: none; }
+    .canvas-wrapper {
+      background: #dbbc9e;
+      border-radius: 24px;
+      box-shadow: inset 0 6px 12px #7a5d4a, 0 12px 0 #5e4132;
+      padding: 16px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 16px;
+      background: #f3e7da;
+      box-shadow: inset 0 0 0 1px #c8aa92, inset 0 0 30px #b28b74, 0 4px 10px rgba(0,0,0,0.2);
+    }
+    .preview-info {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
+      color: #4a3328;
+      font-weight: 500;
+      padding: 0 4px;
+    }
+    /* 右侧控制区 */
+    .control-area {
+      flex: 1.4;
+      min-width: 300px;
+      background: #e8d3c2;
+      border-radius: 28px;
+      box-shadow: inset 0 2px 8px #b2917d, 0 8px 0 #5e4132, 0 4px 10px black;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+    }
+    .tabs {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      flex: 1;
+      background: #dbbc9e;
+      border: none;
+      padding: 10px 0;
+      border-radius: 30px 30px 0 0;
+      font-weight: 700;
+      color: #3f2b20;
+      box-shadow: inset 0 -3px 0 #7a5d4a, 0 3px 0 #5a4133;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: 0.1s;
+      border-bottom: 2px solid #a5836e;
+    }
+    .tab-btn.active {
+      background: #f0dbcc;
+      box-shadow: inset 0 1px 5px #fff3e8, 0 3px 0 #5a4133;
+      transform: translateY(2px);
+    }
+    .tab-pane {
+      display: none;
+      overflow-y: auto;
+      max-height: 500px;
+      padding-right: 6px;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+    .section-title {
+      font-weight: 700;
+      color: #3f2a1f;
+      margin: 6px 0 8px 4px;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #b2917d;
+      padding-bottom: 4px;
+    }
+    .res-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #dbbc9e;
+      padding: 6px 14px;
+      border-radius: 40px;
+      margin-bottom: 16px;
+      box-shadow: inset 0 1px 4px #7a5d4a, 0 3px 0 #5a4133;
+    }
+    .res-selector label {
+      font-weight: 700;
+      color: #2d1f17;
+    }
+    select, input[type="range"] {
+      background: #f3e7da;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      box-shadow: inset 0 1px 4px #846b5a, 0 2px 0 #b2917d;
+      outline: none;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px 10px;
+      max-height: 300px;
+      overflow-y: auto;
+      padding-right: 6px;
+      margin-bottom: 16px;
+    }
+    .feature-item {
+      display: flex;
+      align-items: center;
+      background: #f3e7da;
+      border-radius: 30px;
+      padding: 6px 10px;
+      box-shadow: inset 0 1px 3px #846b5a, 0 2px 0 #b2917d;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border-bottom: 1px solid #a5836e;
+    }
+    .feature-item input { margin-right: 6px; transform: scale(1.1); accent-color: #b35f4e; }
+    .feature-item.selected { background: #dbbfaa; box-shadow: inset 0 2px 5px #6a4e3e, 0 1px 0 #b2917d; transform: translateY(1px); }
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    button {
+      background: #f0dbcc;
+      border: none;
+      padding: 10px 12px;
+      border-radius: 60px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #3f2b20;
+      box-shadow: inset 0 1px 6px #fff5ec, 0 6px 0 #6a4e3e, 0 4px 8px black;
+      cursor: pointer;
+      letter-spacing: 1px;
+      transition: all 0.08s;
+      border-bottom: 2px solid #a5836e;
+      flex: 1 0 auto;
+    }
+    button.small { padding: 8px 10px; font-size: 0.85rem; }
+    button:active { transform: translateY(4px); box-shadow: inset 0 1px 6px #fff5ec, 0 2px 0 #5a3f31, 0 2px 6px black; }
+    button:disabled { opacity: 0.6; transform: none; box-shadow: inset 0 1px 6px #fff5ec, 0 6px 0 #6a4e3e, 0 4px 8px black; cursor: not-allowed; }
+    .status-text { text-align: center; margin-top: 12px; color: #5b3f32; font-weight: 500; }
+    .slider-container { display: flex; align-items: center; gap: 10px; margin: 12px 0; }
+    .slider-container input { flex: 1; }
+    .crop-tools { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+    .tool-group { background: #dbbc9e; border-radius: 20px; padding: 12px; margin-bottom: 16px; }
+  </style>
+</head>
+<body>
+<div class="paper">
+  <h2>卿颜·全能工坊 <small>· 增强·压缩·裁剪 ·</small></h2>
+  
+  <div class="main-layout">
+    <!-- 左侧 -->
+    <div class="canvas-area">
+      <div class="upload-area">
+        <label for="fileInput" class="upload-label">📷 选择照片</label>
+        <input type="file" id="fileInput" accept="image/*">
+        <button id="resetToOriginalBtn" class="small" style="flex:0.5;" disabled>↩️ 返回原图</button>
+      </div>
+      <div class="canvas-wrapper">
+        <canvas id="previewCanvas" width="900" height="800"></canvas>
+      </div>
+      <div class="preview-info">
+        <span id="resolutionInfo">— × —</span>
+        <span id="fileSizeInfo"></span>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button id="downloadOriginalBtn" disabled>📥 下载原图</button>
+        <button id="downloadEnhancedBtn" disabled>✨ 下载增强图</button>
+        <button id="downloadCompressedBtn" disabled>🗜️ 下载压缩图</button>
+      </div>
+    </div>
+    
+    <!-- 右侧标签页 -->
+    <div class="control-area">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="enhance">🎨 画质增强</button>
+        <button class="tab-btn" data-tab="toolbox">🧰 工具箱</button>
+      </div>
+      
+      <!-- 画质增强面板 -->
+      <div class="tab-pane active" id="pane-enhance">
+        <div class="section-title">🎬 输出尺寸</div>
+        <div class="res-selector">
+          <label>分辨率</label>
+          <select id="resolutionSelect">
+            <option value="original" selected>✨ 原图尺寸</option>
+            <option value="1080">1080p (长边1920)</option>
+            <option value="2K">2K (长边2048)</option>
+            <option value="4K">4K (长边3840)</option>
+          </select>
+        </div>
+        <div class="section-title">🎨 增强功能 (多选叠加)</div>
+        <div class="features-grid" id="featuresContainer"></div>
+        <div class="action-buttons">
+          <button id="renderBtn" disabled>✨ 开始渲染</button>
+        </div>
+        <div class="status-text" id="statusMessage">等待上传照片…</div>
+      </div>
+      
+      <!-- 工具箱面板 -->
+      <div class="tab-pane" id="pane-toolbox">
+        <div class="tool-group">
+          <div class="section-title">🗜️ 图片压缩</div>
+          <div class="slider-container">
+            <span>质量</span>
+            <input type="range" id="qualitySlider" min="10" max="100" value="80" step="5">
+            <span id="qualityValue">80%</span>
+          </div>
+          <button id="applyCompressBtn">应用压缩 (预览)</button>
+          <p style="font-size:0.8rem; margin:4px 0;">压缩后图片将显示在画布，可下载</p>
+        </div>
+        
+        <div class="tool-group">
+          <div class="section-title">✂️ 裁剪 / 旋转</div>
+          <div class="crop-tools">
+            <button id="cropModeBtn">📐 进入裁剪模式</button>
+            <button id="rotateLeftBtn">↪️ 左旋</button>
+            <button id="rotateRightBtn">↩️ 右旋</button>
+            <button id="flipHBtn">⇆ 水平翻转</button>
+            <button id="flipVBtn">⇅ 垂直翻转</button>
+          </div>
+          <p style="font-size:0.8rem;">裁剪模式：拖动鼠标选择区域，松开完成</p>
+          <button id="applyCropBtn" style="margin-top:6px;">✅ 确认裁剪</button>
+          <button id="cancelCropBtn" style="margin-top:6px;">❌ 取消裁剪</button>
+        </div>
+        <div class="status-text" id="toolboxStatus"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    // DOM 元素
+    const canvas = document.getElementById('previewCanvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const fileInput = document.getElementById('fileInput');
+    const renderBtn = document.getElementById('renderBtn');
+    const downloadEnhancedBtn = document.getElementById('downloadEnhancedBtn');
+    const downloadOriginalBtn = document.getElementById('downloadOriginalBtn');
+    const downloadCompressedBtn = document.getElementById('downloadCompressedBtn');
+    const resetToOriginalBtn = document.getElementById('resetToOriginalBtn');
+    const statusMsg = document.getElementById('statusMessage');
+    const resolutionInfo = document.getElementById('resolutionInfo');
+    const resolutionSelect = document.getElementById('resolutionSelect');
+    const featuresContainer = document.getElementById('featuresContainer');
+    const qualitySlider = document.getElementById('qualitySlider');
+    const qualityValue = document.getElementById('qualityValue');
+    const applyCompressBtn = document.getElementById('applyCompressBtn');
+    const toolboxStatus = document.getElementById('toolboxStatus');
+
+    // 标签页
+    const tabs = document.querySelectorAll('.tab-btn');
+    const panes = document.querySelectorAll('.tab-pane');
+    tabs.forEach(t => t.addEventListener('click', () => {
+      const tabId = t.dataset.tab;
+      tabs.forEach(bt => bt.classList.remove('active'));
+      panes.forEach(p => p.classList.remove('active'));
+      t.classList.add('active');
+      document.getElementById(`pane-${tabId}`).classList.add('active');
+    }));
+
+    const PREVIEW_W = 900, PREVIEW_H = 800;
+    canvas.width = PREVIEW_W; canvas.height = PREVIEW_H;
+
+    let originalImage = null;            // 原始图片对象
+    let currentDisplayImage = null;      // 当前画布显示的图片 (可能是原图、增强、压缩等)
+    let enhancedImageData = null;
+    let enhancedWidth = 0, enhancedHeight = 0;
+    let compressedBlob = null;
+    
+    // 裁剪状态
+    let isCropping = false;
+    let cropStart = null, cropEnd = null;
+    let originalCtxState = null;
+
+    // ----- 功能库 (同前) -----
+    const featureLibrary = {
+      movie: { name: '🎬 电影级别', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.25, sat:1.15, bright:0.00, warmth:-0.05 }) },
+      camera: { name: '📷 照相机', apply: (d) => d },
+      national: { name: '🇨🇳 国家级别', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.30, sat:1.25, bright:0.05, warmth:0.03 }) },
+      hdr: { name: '🌈 HDR', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.40, sat:1.20, bright:0.08, warmth:0.0 }) },
+      daylight: { name: '☀️ 白天', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.10, sat:1.10, bright:0.12, warmth:0.05 }) },
+      night: { name: '🌙 黑夜', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.40, sat:0.90, bright:-0.15, warmth:-0.08 }) },
+      natural_light: { name: '🌿 自然光线', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.00, sat:1.02, bright:0.05, warmth:0.01 }) },
+      raytracing: { name: '✨ 光线追踪', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.20, sat:1.10, bright:0.10, warmth:0.02 }) },
+      fair: { name: '👩🏻 美女白嫩', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:0.95, sat:0.95, bright:0.08, warmth:0.04 }) },
+      soft: { name: '🌸 柔光梦境', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:0.90, sat:1.00, bright:0.05, warmth:0.03 }) },
+      vivid: { name: '🎨 鲜艳', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.20, sat:1.35, bright:0.02, warmth:0.02 }) },
+      rpg: { name: '🎮 RPG游戏', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.30, sat:1.30, bright:-0.02, warmth:0.10 }) },
+      fantasy: { name: '🧝 奇幻森林', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.15, sat:1.40, bright:0.10, warmth:0.08 }) },
+      vintage: { name: '📻 复古胶片', apply: (d,w,h) => applyToneAdjust(d,w,h, { contrast:1.10, sat:0.85, bright:-0.05, warmth:0.12 }) },
+      bw: { name: '🖤 经典黑白', apply: (d,w,h) => applyBlackWhite(d) },
+      vignette: { name: '🌑 暗角', apply: (d,w,h) => applyVignette(d,w,h,0.45) },
+      grain: { name: '🎞️ 胶片颗粒', apply: (d,w,h) => applyGrain(d,14) },
+      sharpen: { name: '🔪 锐化', apply: (d,w,h) => applySharpen(d,w,h,0.28) },
+      soft_glow: { name: '💫 柔光', apply: (d,w,h) => applySoftGlow(d,w,h,0.3) }
+    };
+
+    // 辅助函数 (同前，略调整)
+    function applyToneAdjust(imageData, w, h, p) {
+      const data = imageData.data;
+      for (let i=0; i<data.length; i+=4) {
+        let r=data[i], g=data[i+1], b=data[i+2];
+        if (data[i+3]<10) continue;
+        let rf=r/255, gf=g/255, bf=b/255;
+        rf = Math.min(1, Math.max(0, rf + p.bright));
+        gf = Math.min(1, Math.max(0, gf + p.bright));
+        bf = Math.min(1, Math.max(0, bf + p.bright));
+        if (p.warmth > 0) { rf = Math.min(1, rf*(1+p.warmth*0.25)); gf = Math.min(1, gf*(1+p.warmth*0.12)); }
+        else if (p.warmth < 0) { bf = Math.min(1, bf*(1-p.warmth*0.25)); }
+        const curve = (x) => {
+          if (p.contrast===1) return x;
+          if (x<0.5) return Math.pow(2*x, p.contrast)/2;
+          return 1 - Math.pow(2*(1-x), p.contrast)/2;
+        };
+        rf=curve(rf); gf=curve(gf); bf=curve(bf);
+        const avg = (rf+gf+bf)/3;
+        rf = avg + (rf-avg)*p.sat; gf = avg + (gf-avg)*p.sat; bf = avg + (bf-avg)*p.sat;
+        data[i]=Math.round(rf*255); data[i+1]=Math.round(gf*255); data[i+2]=Math.round(bf*255);
+      }
+      return imageData;
+    }
+    function applyBlackWhite(d) { const data=d.data; for(let i=0;i<data.length;i+=4){ const g=0.2126*data[i]+0.7152*data[i+1]+0.0722*data[i+2]; data[i]=data[i+1]=data[i+2]=g; } return d; }
+    function applyVignette(d,w,h,s){ const data=d.data, cx=w/2, cy=h/2, maxD=Math.sqrt(cx*cx+cy*cy); for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const idx=(y*w+x)*4; const dist=Math.sqrt((x-cx)**2+(y-cy)**2)/maxD; const v=Math.min(1,dist*s); data[idx]=data[idx]*(1-v*0.7); data[idx+1]=data[idx+1]*(1-v*0.7); data[idx+2]=data[idx+2]*(1-v*0.7); } return d; }
+    function applyGrain(d,amt){ const data=d.data; for(let i=0;i<data.length;i+=4){ const g=(Math.random()-0.5)*amt; data[i]=Math.min(255,Math.max(0,data[i]+g)); data[i+1]=Math.min(255,Math.max(0,data[i+1]+g)); data[i+2]=Math.min(255,Math.max(0,data[i+2]+g)); } return d; }
+    function applySharpen(d,w,h,s){ const data=d.data, copy=new Uint8ClampedArray(data); for(let y=1;y<h-1;y++) for(let x=1;x<w-1;x++){ const idx=(y*w+x)*4; for(let c=0;c<3;c++){ const center=copy[idx+c], top=copy[((y-1)*w+x)*4+c], bottom=copy[((y+1)*w+x)*4+c], left=copy[(y*w+(x-1))*4+c], right=copy[(y*w+(x+1))*4+c]; const lap=4*center-top-bottom-left-right; data[idx+c]=Math.min(255,Math.max(0,center+lap*s)); } } return d; }
+    function applySoftGlow(d,w,h,s){ const canvas=document.createElement('canvas'); canvas.width=w; canvas.height=h; const ct=canvas.getContext('2d'); ct.putImageData(d,0,0); ct.filter=`blur(${8*s}px)`; ct.drawImage(canvas,0,0); const blur=ct.getImageData(0,0,w,h).data; const data=d.data; for(let i=0;i<data.length;i+=4){ data[i]=data[i]*(1-s)+blur[i]*s; data[i+1]=data[i+1]*(1-s)+blur[i+1]*s; data[i+2]=data[i+2]*(1-s)+blur[i+2]*s; } return d; }
+
+    // 构建复选框
+    function buildFeatures() {
+      featuresContainer.innerHTML = '';
+      Object.entries(featureLibrary).forEach(([key, val]) => {
+        const div = document.createElement('div'); div.className = 'feature-item';
+        div.innerHTML = `<input type="checkbox" id="feat_${key}" value="${key}"> <label for="feat_${key}">${val.name}</label>`;
+        featuresContainer.appendChild(div);
+        div.addEventListener('click', (e) => { if(e.target.tagName!=='INPUT'){ const cb=div.querySelector('input'); cb.checked=!cb.checked; } div.classList.toggle('selected', div.querySelector('input').checked); });
+      });
+    }
+    buildFeatures();
+
+    function getSelectedFeatures() {
+      return Array.from(featuresContainer.querySelectorAll('input:checked')).map(cb => cb.value);
+    }
+
+    // 更新画布显示图片 (适应预览)
+    function displayImage(img) {
+      ctx.clearRect(0,0,PREVIEW_W,PREVIEW_H);
+      ctx.fillStyle = '#f3e7da'; ctx.fillRect(0,0,PREVIEW_W,PREVIEW_H);
+      const scale = Math.min(PREVIEW_W/img.width, PREVIEW_H/img.height);
+      const w = img.width*scale, h = img.height*scale;
+      ctx.drawImage(img, (PREVIEW_W-w)/2, (PREVIEW_H-h)/2, w, h);
+      currentDisplayImage = img;
+      resolutionInfo.innerText = `${img.width} × ${img.height}`;
+    }
+
+    function loadOriginalImage(file) {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          originalImage = img;
+          displayImage(img);
+          renderBtn.disabled = false;
+          resetToOriginalBtn.disabled = false;
+          downloadOriginalBtn.disabled = false;
+          enhancedImageData = null;
+          compressedBlob = null;
+          downloadEnhancedBtn.disabled = true;
+          downloadCompressedBtn.disabled = true;
+          statusMsg.innerText = '照片已加载';
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    fileInput.addEventListener('change', e => { if(e.target.files[0]) loadOriginalImage(e.target.files[0]); });
+
+    // 返回原图
+    resetToOriginalBtn.addEventListener('click', () => {
+      if (originalImage) displayImage(originalImage);
+    });
+
+    // 渲染增强
+    renderBtn.addEventListener('click', async () => {
+      if (!originalImage) return;
+      const features = getSelectedFeatures();
+      if (features.length === 0) { alert('请勾选至少一个功能'); return; }
+      const resOpt = resolutionSelect.value;
+      let outW, outH;
+      if (resOpt==='original') { outW=originalImage.width; outH=originalImage.height; }
+      else { let max=resOpt==='1080'?1920:resOpt==='2K'?2048:3848; const s=Math.min(max/originalImage.width, max/originalImage.height); outW=Math.round(originalImage.width*s); outH=Math.round(originalImage.height*s); }
+      enhancedWidth=outW; enhancedHeight=outH;
+      statusMsg.innerText = `渲染中...`;
+      renderBtn.disabled = true;
+      const off = document.createElement('canvas'); off.width=outW; off.height=outH;
+      const offCtx = off.getContext('2d'); offCtx.drawImage(originalImage,0,0,outW,outH);
+      let idata = offCtx.getImageData(0,0,outW,outH);
+      for (let k of features) if(featureLibrary[k]) idata = featureLibrary[k].apply(idata, outW, outH);
+      enhancedImageData = idata;
+      offCtx.putImageData(idata,0,0);
+      // 显示增强图
+      const enhancedImg = new Image();
+      enhancedImg.onload = () => { displayImage(enhancedImg); };
+      enhancedImg.src = off.toDataURL('image/png');
+      statusMsg.innerText = `完成 (${outW}×${outH})`;
+      renderBtn.disabled = false;
+      downloadEnhancedBtn.disabled = false;
+    });
+
+    // 压缩功能
+    qualitySlider.addEventListener('input', () => qualityValue.textContent = qualitySlider.value+'%');
+    applyCompressBtn.addEventListener('click', () => {
+      if (!currentDisplayImage) return;
+      const canvas = document.createElement('canvas');
+      canvas.width = currentDisplayImage.width; canvas.height = currentDisplayImage.height;
+      canvas.getContext('2d').drawImage(currentDisplayImage,0,0);
+      canvas.toBlob(blob => {
+        compressedBlob = blob;
+        const url = URL.createObjectURL(blob);
+        const img = new Image();
+        img.onload = () => { displayImage(img); toolboxStatus.innerText = `压缩完成 (${(blob.size/1024).toFixed(1)} KB)`; downloadCompressedBtn.disabled = false; };
+        img.src = url;
+      }, 'image/jpeg', qualitySlider.value/100);
+    });
+
+    // 裁剪相关 (简化实现，使用选区)
+    let cropCanvas = null;
+    document.getElementById('cropModeBtn').addEventListener('click', () => {
+      if (!currentDisplayImage) return;
+      isCropping = true;
+      canvas.style.cursor = 'crosshair';
+      toolboxStatus.innerText = '拖动鼠标选择裁剪区域';
+    });
+    canvas.addEventListener('mousedown', e => {
+      if (!isCropping || !currentDisplayImage) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width/rect.width, scaleY = canvas.height/rect.height;
+      cropStart = { x: (e.clientX-rect.left)*scaleX, y: (e.clientY-rect.top)*scaleY };
+    });
+    canvas.addEventListener('mousemove', e => {
+      if (!isCropping || !cropStart) return;
+      // 绘制预览框 (略)
+    });
+    canvas.addEventListener('mouseup', e => {
+      if (!isCropping || !cropStart) return;
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width/rect.width, scaleY = canvas.height/rect.height;
+      cropEnd = { x: (e.clientX-rect.left)*scaleX, y: (e.clientY-rect.top)*scaleY };
+      isCropping = false; canvas.style.cursor = 'default';
+      const x = Math.min(cropStart.x, cropEnd.x), y = Math.min(cropStart.y, cropEnd.y);
+      const w = Math.abs(cropEnd.x-cropStart.x), h = Math.abs(cropEnd.y-cropStart.y);
+      if (w<10 || h<10) return;
+      cropCanvas = document.createElement('canvas'); cropCanvas.width = w; cropCanvas.height = h;
+      cropCanvas.getContext('2d').drawImage(currentDisplayImage, x, y, w, h, 0,0,w,h);
+      const img = new Image();
+      img.onload = () => { displayImage(img); toolboxStatus.innerText = '裁剪预览，可确认或取消'; };
+      img.src = cropCanvas.toDataURL();
+    });
+    document.getElementById('applyCropBtn').addEventListener('click', () => {
+      if (cropCanvas) { /* 已经通过预览更新了 currentDisplayImage */ toolboxStatus.innerText = '裁剪已应用'; }
+    });
+    document.getElementById('cancelCropBtn').addEventListener('click', () => {
+      if (originalImage) displayImage(originalImage);
+    });
+    // 旋转/翻转
+    function rotate(deg) {
+      if (!currentDisplayImage) return;
+      const c = document.createElement('canvas'); const w=currentDisplayImage.width, h=currentDisplayImage.height;
+      c.width = (deg%180===0)?w:h; c.height = (deg%180===0)?h:w;
+      const ct = c.getContext('2d'); ct.translate(c.width/2, c.height/2); ct.rotate(deg*Math.PI/180);
+      ct.drawImage(currentDisplayImage, -w/2, -h/2);
+      const img = new Image(); img.onload = () => displayImage(img); img.src = c.toDataURL();
+    }
+    document.getElementById('rotateLeftBtn').addEventListener('click', ()=>rotate(-90));
+    document.getElementById('rotateRightBtn').addEventListener('click', ()=>rotate(90));
+    function flip(horizontal) {
+      if (!currentDisplayImage) return;
+      const c = document.createElement('canvas'); c.width=currentDisplayImage.width; c.height=currentDisplayImage.height;
+      const ct = c.getContext('2d'); if(horizontal){ ct.translate(c.width,0); ct.scale(-1,1); } else { ct.translate(0,c.height); ct.scale(1,-1); }
+      ct.drawImage(currentDisplayImage,0,0); const img=new Image(); img.onload=()=>displayImage(img); img.src=c.toDataURL();
+    }
+    document.getElementById('flipHBtn').addEventListener('click', ()=>flip(true));
+    document.getElementById('flipVBtn').addEventListener('click', ()=>flip(false));
+
+    // 下载
+    downloadOriginalBtn.addEventListener('click', ()=>{
+      if(originalImage){ const a=document.createElement('a'); a.download='original.png'; a.href=originalImage.src; a.click(); }
+    });
+    downloadEnhancedBtn.addEventListener('click', ()=>{
+      if(!enhancedImageData) return;
+      const c=document.createElement('canvas'); c.width=enhancedWidth; c.height=enhancedHeight;
+      c.getContext('2d').putImageData(enhancedImageData,0,0); const a=document.createElement('a');
+      a.download=`enhanced_${enhancedWidth}x${enhancedHeight}.png`; a.href=c.toDataURL(); a.click();
+    });
+    downloadCompressedBtn.addEventListener('click', ()=>{
+      if(compressedBlob){ const a=document.createElement('a'); a.download='compressed.jpg'; a.href=URL.createObjectURL(compressedBlob); a.click(); }
+    });
+
+    resetPreview();
+    function resetPreview() { ctx.fillStyle='#f3e7da'; ctx.fillRect(0,0,PREVIEW_W,PREVIEW_H); }
+  })();
+</script>
+</body>
+</html>
